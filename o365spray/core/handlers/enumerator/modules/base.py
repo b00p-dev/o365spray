@@ -6,6 +6,7 @@ import concurrent.futures.thread
 import logging
 import urllib3  # type: ignore
 from functools import partial
+from itertools import cycle
 from typing import (
     Dict,
     List,
@@ -43,6 +44,7 @@ class EnumeratorBase(BaseHandler):
         sleep: int = 0,
         jitter: int = 0,
         proxy_url: str = None,
+        proxy_urls: List[str] = None,
         *args,
         **kwargs,
     ):
@@ -89,6 +91,15 @@ class EnumeratorBase(BaseHandler):
         self.sleep = sleep
         self.jitter = jitter
         self.proxy_url = proxy_url
+
+        # Handle proxy list for round-robin rotation
+        self.proxy_urls = proxy_urls
+        if self.proxy_urls:
+            self.proxy_url_cycle = cycle(self.proxy_urls)
+            logging.info(f"Proxy list loaded: {len(self.proxy_urls)} workers will be rotated")
+        else:
+            self.proxy_url_cycle = None
+
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=workers)
         self.poolsize = poolsize
 

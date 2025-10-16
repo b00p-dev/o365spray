@@ -186,6 +186,11 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="FireProx API URL.",
     )
+    http_args.add_argument(
+        "--proxy-list",
+        type=str,
+        help="File containing list of proxy URLs (one per line) for round-robin rotation.",
+    )
 
     # Misc configurations
     output_args = parser.add_argument_group(title="Output Configuration")
@@ -263,6 +268,20 @@ def parse_args() -> argparse.Namespace:
     if args.spray and args.passfile:
         if not Path(args.passfile).is_file():
             parser.error("invalid password file provided")
+
+    # Validate and load proxy list
+    if args.proxy_list:
+        if not Path(args.proxy_list).is_file():
+            parser.error("invalid proxy list file provided")
+
+        # Ensure --proxy-list is mutually exclusive with --proxy and --proxy-url
+        if args.proxy or args.proxy_url:
+            parser.error("--proxy-list cannot be used with --proxy or --proxy-url")
+
+        # Load proxy URLs from file
+        args.proxy_urls = Helper.get_list_from_file(args.proxy_list)
+        if not args.proxy_urls:
+            parser.error("proxy list file is empty")
 
     return args
 

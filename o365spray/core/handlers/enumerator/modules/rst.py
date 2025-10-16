@@ -48,8 +48,17 @@ class EnumerateModule_rst(EnumeratorBase):
             headers = Defaults.HTTP_HEADERS
             headers["Content-Type"] = "application/soap+xml"
 
-            # Handle FireProx API URL
-            if self.proxy_url:
+            # Handle FireProx API URL (single or rotating)
+            if self.proxy_url_cycle:
+                # Use rotating proxy list (round-robin)
+                proxy_url = next(self.proxy_url_cycle).rstrip("/")
+                url = f"{proxy_url}/rst2.srf"
+
+                # Update headers
+                headers = Helper.fireprox_headers(headers)
+
+            elif self.proxy_url:
+                # Use single proxy URL
                 proxy_url = self.proxy_url.rstrip("/")
                 url = f"{proxy_url}/rst2.srf"
 

@@ -99,6 +99,7 @@ def spray(args: argparse.Namespace, output_dir: str, enum: object):
         sleep=args.sleep,
         jitter=args.jitter,
         proxy_url=args.proxy_url,
+        proxy_urls=getattr(args, 'proxy_urls', None),  # Proxy list for rotation
         useragents=args.useragents,
     )
 

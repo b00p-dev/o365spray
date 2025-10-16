@@ -45,8 +45,17 @@ class SprayModule_reporting(SprayerBase):
             # Grab default headers
             headers = Defaults.HTTP_HEADERS
 
-            # Handle FireProx API URL
-            if self.proxy_url:
+            # Handle FireProx API URL (single or rotating)
+            if self.proxy_url_cycle:
+                # Use rotating proxy list (round-robin)
+                proxy_url = next(self.proxy_url_cycle).rstrip("/")
+                url = f"{proxy_url}/ecp/reportingwebservice/reporting.svc"
+
+                # Update headers
+                headers = Helper.fireprox_headers(headers)
+
+            elif self.proxy_url:
+                # Use single proxy URL
                 proxy_url = self.proxy_url.rstrip("/")
                 url = f"{proxy_url}/ecp/reportingwebservice/reporting.svc"
 

@@ -14,7 +14,8 @@ o365spray is a username enumeration and password spraying tool aimed at Microsof
   - [Enumeration](#enumeration)
   - [Spraying](#spraying)
 - [FireProx URLs](#fireprox-base-urls)
-  - [Enumeration](#enumeration-1)
+- [FlareProx URLs](#flareprox-base-urls) 
+ - [Enumeration](#enumeration-1)
   - [Spraying](#spraying-1)
 - [User Agent Randomization](#user-agent-randomization)
 - [Acknowledgments](#acknowledgments)
@@ -36,6 +37,9 @@ Perform username enumeration against a given domain:<br>
 
 Perform password spraying against a given domain:<br>
 `o365spray --spray -U usernames.txt -P passwords.txt --count 2 --lockout 5 --domain test.com`
+
+Perform password spraying with multiple proxy URLs for IP rotation:<br>
+`o365spray --spray -U usernames.txt -p Password123! --proxy-list proxy_list.txt --domain test.com`
 
 ```
 usage: o365spray [flags]
@@ -130,6 +134,10 @@ HTTP Configuration:
   --proxy-url PROXY_URL
                         FireProx API URL.
 
+  --proxy-list PROXY_LIST
+                        File containing list of proxy URLs (one per line) for
+                        round-robin rotation.
+
 Output Configuration:
   --output OUTPUT       Output directory for results and test case files.
                         Default: current directory
@@ -172,6 +180,31 @@ Microsoft has made it more difficult to perform password spraying, so using tool
 To use FireProx with o365spray, create a proxy URL for the given o365spray module based on the base URL tables below. The proxy URL can then be passed in via `--proxy-url`.
 
 > NOTE: Make sure to use the correct `--enum-module` or `--spray-module` flag with the base URL used to create the FireProx URL.
+
+### FlareProx Base URLs
+
+For improved Smart Lockout bypass, you can use `--proxy-list` to rotate through multiple proxy URLs created by tools like [FlareProx](https://github.com/MrTurvey/flareprox). Each request will automatically use the next proxy in the list via round-robin rotation.
+
+
+**Example proxy list file for FlareProx (proxy_list.txt):**
+```
+https://flareprox-1234567890-abcdef.cloudflare-example.workers.dev
+https://flareprox-1234567891-ghijkl.cloudflare-example.workers.dev 
+https://flareprox-1234567892-mnopqr.cloudflare-example.workers.dev
+https://flareprox-1234567893-stuvwx.cloudflare-example.workers.dev
+https://flareprox-1234567894-yzabcd.cloudflare-example.workers.dev
+```
+
+**Usage:**
+```bash
+# Password spraying with proxy rotation
+o365spray --spray -U usernames.txt -p Password123! --spray-module oauth2 --proxy-list proxy_list.txt --domain test.com 
+
+# User enumeration with proxy rotation
+o365spray --enum -U usernames.txt --enum-module oauth2 --proxy-list proxy_list.txt --domain test.com
+```
+
+> NOTE: All proxy URLs in the list must be configured for the same base URL/module. The `--proxy-list` parameter is mutually exclusive with `--proxy` and `--proxy-url`.
 
 ### Enumeration
 
